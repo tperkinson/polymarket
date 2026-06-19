@@ -5,7 +5,7 @@
 node_modules/
 dist/
 build/
+data/
 .cache/
 __pycache__/
 *.pyc
-
