@@ -158,6 +158,13 @@ export type CachedTraderQualityProfile = TraderQualityBadge & {
   metrics: TraderHistoryMetrics;
 };
 
+export type TraderQualityCacheScope = {
+  top: number;
+  category: LeaderboardCategory;
+  timePeriod: LeaderboardTimePeriod;
+  orderBy: LeaderboardOrderBy;
+};
+
 export type TraderQualityResult = {
   schemaVersion: 1;
   fetchedAt: string;
@@ -191,9 +198,15 @@ type CachedTraderHistory = {
   lastQualityFetchedAt?: string;
 };
 
+type CachedTraderQualityRun = TraderQualityCacheScope & {
+  fetchedAt: string;
+  acceptedTraderIds: string[];
+};
+
 type TraderQualityCacheFile = {
   schemaVersion: 1;
   updatedAt: string;
+  latestQualityRun?: CachedTraderQualityRun;
   traders: Record<string, CachedTraderHistory>;
 };
 
@@ -302,6 +315,15 @@ export async function runTraderQuality(options: TraderQualityOptions): Promise<T
     entry.lastQualityFetchedAt = fetchedAt;
     cacheChanged = true;
   }
+  cache.latestQualityRun = {
+    top: options.top,
+    category: options.category,
+    timePeriod: options.timePeriod,
+    orderBy: options.orderBy,
+    fetchedAt,
+    acceptedTraderIds: filteredRows.map((row) => row.proxyWallet.toLowerCase()),
+  };
+  cacheChanged = true;
 
   if (cacheChanged) writeCache(cachePath, cache);
 
@@ -325,12 +347,17 @@ export async function runTraderQuality(options: TraderQualityOptions): Promise<T
   };
 }
 
-export function loadCachedTraderQualityBadges(cachePath = DEFAULT_TRADER_QUALITY_CACHE_PATH): Map<string, TraderQualityBadge> {
+export function loadCachedTraderQualityBadges(
+  cachePath = DEFAULT_TRADER_QUALITY_CACHE_PATH,
+  scope?: TraderQualityCacheScope,
+): Map<string, TraderQualityBadge> {
   const cache = readCache(resolve(process.cwd(), cachePath));
   const badges = new Map<string, TraderQualityBadge>();
+  const acceptedIds = matchingAcceptedTraderIds(cache, scope);
 
   for (const entry of Object.values(cache.traders)) {
     if (typeof entry.lastScore !== "number" || !entry.lastScoreLabel || !entry.lastQualityFetchedAt) continue;
+    if (acceptedIds && !acceptedIds.has(entry.proxyWallet.toLowerCase())) continue;
     badges.set(entry.proxyWallet.toLowerCase(), {
       proxyWallet: entry.proxyWallet,
       userName: entry.userName,
@@ -342,6 +369,14 @@ export function loadCachedTraderQualityBadges(cachePath = DEFAULT_TRADER_QUALITY
   }
 
   return badges;
+}
+
+export function hasMatchingCachedTraderQualityRun(
+  scope: TraderQualityCacheScope,
+  cachePath = DEFAULT_TRADER_QUALITY_CACHE_PATH,
+): boolean {
+  const cache = readCache(resolve(process.cwd(), cachePath));
+  return cacheScopeMatches(cache.latestQualityRun, scope);
 }
 
 export function loadCachedTraderQualityProfiles(cachePath = DEFAULT_TRADER_QUALITY_CACHE_PATH): Map<string, CachedTraderQualityProfile> {
@@ -933,6 +968,23 @@ function readCache(path: string): TraderQualityCacheFile {
     return { schemaVersion: 1, updatedAt: new Date(0).toISOString(), traders: {} };
   }
   return parsed;
+}
+
+function matchingAcceptedTraderIds(cache: TraderQualityCacheFile, scope?: TraderQualityCacheScope): Set<string> | undefined {
+  if (!scope) return undefined;
+  const latest = cache.latestQualityRun;
+  if (!latest || !cacheScopeMatches(latest, scope)) return new Set();
+  return new Set(latest.acceptedTraderIds.map((wallet) => wallet.toLowerCase()));
+}
+
+function cacheScopeMatches(latest: CachedTraderQualityRun | undefined, scope: TraderQualityCacheScope): boolean {
+  return Boolean(
+    latest &&
+      latest.top === scope.top &&
+      latest.category === scope.category &&
+      latest.timePeriod === scope.timePeriod &&
+      latest.orderBy === scope.orderBy,
+  );
 }
 
 function writeCache(path: string, cache: TraderQualityCacheFile): void {

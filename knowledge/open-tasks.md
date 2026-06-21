@@ -16,6 +16,7 @@
 - Added Strong Trader Watch web tab to inspect cached high-Q traders' current public positions with aligned/opposed leaderboard context.
 - Added Sharp Disagreement web tab to screen for high-Q, topic-fit traders positioned against opposed or weak leaderboard traders.
 - Added Kalshi Markets web tab for read-only public Kalshi market search and optional orderbook inspection.
+- Fixed Strong Trader Watch to use only the latest matching Trader Quality accepted list instead of stale cached Q scores from unrelated cohorts.
 - Added odds-adjusted trader metrics, style labels, and odds-bucket detail to Trader Quality and the cached `Q` score.
 - Corrected Trader Quality odds-edge interpretation to exclude sold-before-resolution rows from final-outcome correctness and share-weight expected/actual outcome rates.
 - Added `npm run trader:quality` for scoring leaderboard traders and warming/exporting the quality cache.

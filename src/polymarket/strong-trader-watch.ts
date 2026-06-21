@@ -7,7 +7,11 @@ import {
   type LeaderboardTrader,
   type Position,
 } from "./data-api.js";
-import { loadCachedTraderQualityBadges, type TraderQualityBadge } from "./trader-quality.js";
+import {
+  hasMatchingCachedTraderQualityRun,
+  loadCachedTraderQualityBadges,
+  type TraderQualityBadge,
+} from "./trader-quality.js";
 
 export type StrongTraderWatchOptions = {
   top: number;
@@ -120,7 +124,14 @@ export async function runStrongTraderWatch(options: StrongTraderWatchOptions): P
   validateStrongTraderWatchOptions(options);
 
   const warnings: string[] = [];
-  const badges = loadCachedTraderQualityBadges();
+  const qualityScope = {
+    top: options.top,
+    category: options.category,
+    timePeriod: options.timePeriod,
+    orderBy: options.orderBy,
+  };
+  const hasMatchingQualityRun = hasMatchingCachedTraderQualityRun(qualityScope);
+  const badges = loadCachedTraderQualityBadges(undefined, qualityScope);
   const { traders } = await fetchLeaderboardRange({
     fromRank: 1,
     toRank: options.top,
@@ -133,8 +144,10 @@ export async function runStrongTraderWatch(options: StrongTraderWatchOptions): P
     .filter((trader) => (badges.get(trader.proxyWallet.toLowerCase())?.score ?? 0) >= options.qualityThreshold)
     .map((trader) => trader.proxyWallet);
 
-  if (badges.size === 0) {
-    warnings.push("No cached trader-quality scores found. Run the Trader Quality tab first, then run Strong Trader Watch again.");
+  if (!hasMatchingQualityRun) {
+    warnings.push("No matching Trader Quality run found for this exact Top/Category/Window/Rank-by cohort. Run the Trader Quality tab with the same settings first, then run Strong Trader Watch again.");
+  } else if (badges.size === 0) {
+    warnings.push("The matching Trader Quality run had no accepted scored traders. Loosen Trader Quality filters or refresh that tab first.");
   } else if (strongTraderIds.length === 0) {
     warnings.push(`No cached traders in this leaderboard cohort met Q${options.qualityThreshold} or higher. Lower the threshold or run Trader Quality for this cohort.`);
   }

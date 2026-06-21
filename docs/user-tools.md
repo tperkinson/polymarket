@@ -61,6 +61,7 @@ The `Score` is a research ranking from 0-100. It combines:
 Higher score means a cleaner leader-consensus signal. It is not a probability estimate or a trade recommendation.
 
 The `Q` badge beside a trader name is a cached trader-quality score from 0-100. Run the `Trader Quality` tab first for the same leaderboard cohort to populate or refresh those badges. `Q --` means there is no cached score for that trader yet.
+Strong Trader Watch requires the latest Trader Quality run to match the same `Top traders`, `Category`, `Leaderboard window`, and `Rank by` settings. If those do not match, it will not reuse stale Q scores from a different cohort.
 
 Trader Quality now adjusts for the odds a trader bought. A trader who wins 90% of bets bought at 90 cents is not showing edge; a trader who wins 35% of bets bought at 20 cents is.
 
