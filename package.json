@@ -1,0 +1,35 @@
+{
+  "name": "polymarket-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check:public": "tsx src/commands/check-public.ts",
+    "auth:derive": "tsx src/commands/derive-api-key.ts",
+    "account:check": "tsx src/commands/check-account.ts",
+    "us:check-public": "tsx src/commands/us-check-public.ts",
+    "us:check-account": "tsx src/commands/us-check-account.ts",
+    "leaderboard:traders": "tsx src/commands/leaderboard-traders.ts",
+    "consensus:leaders": "tsx src/commands/consensus-leaders.ts",
+    "trader:quality": "tsx src/commands/trader-quality.ts",
+    "positions:user": "tsx src/commands/positions-user.ts",
+    "test:consistency": "tsx src/commands/internal-consistency.ts",
+    "start": "npm run web",
+    "web": "tsx src/server.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@polymarket/clob-client-v2": "^1.0.6",
+    "dotenv": "^16.4.7",
+    "polymarket-us": "^0.1.1",
+    "viem": "^2.52.2"
+  },
+  "overrides": {
+    "ws": "^8.21.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.3",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
+  }
+}
