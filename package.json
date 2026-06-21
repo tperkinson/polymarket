@@ -13,6 +13,7 @@
     "consensus:leaders": "tsx src/commands/consensus-leaders.ts",
     "trader:quality": "tsx src/commands/trader-quality.ts",
     "positions:user": "tsx src/commands/positions-user.ts",
+    "test:consistency": "tsx src/commands/internal-consistency.ts",
     "start": "npm run web",
     "web": "tsx src/server.ts",
     "typecheck": "tsc --noEmit"

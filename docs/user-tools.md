@@ -201,6 +201,21 @@ Useful options:
 - `--cache-hours 6`
 - `--refresh`
 
+## Internal Consistency Bench
+
+Run local checks for screen handoff and cache invariants:
+
+```bash
+npm run test:consistency
+```
+
+What it checks:
+
+- Strong Trader Watch-style scoped cache loading only includes traders accepted by the latest matching Trader Quality run.
+- A mismatched Trader Quality scope does not leak stale cached `Q` badges.
+- Broad unscoped cache loading still works for screens that intentionally use all cached badges.
+- Topic inference returns expected broad categories for simple market titles.
+
 ## Leaderboard Trader IDs
 
 Save top leaderboard trader IDs for later workflows:
